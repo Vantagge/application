@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/scripts/001_create_users_table.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/002_create_establishments_table.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/003_create_establishment_configs_table.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/004_create_customers_table.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/005_create_customer_loyalty_table.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/006_create_transactions_table.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/007_create_user_profile_trigger.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/008_setup_establishment_function.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$PROJECT_DIR$/scripts/009_setup_customer_function.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+  </component>
+</project>
