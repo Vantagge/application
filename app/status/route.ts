@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import pkg from "../../../package.json"
+import pkg from "../../package.json"
 import { checkDatabaseSetup } from "@/lib/db/setup"
 
 export async function GET() {
