@@ -88,3 +88,28 @@ export async function getCustomerDetails(customerId: string) {
 
   return { loyalty, transactions: transactions || [] }
 }
+
+export async function searchCustomers(query: string) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Não autenticado")
+
+  const { data: userData } = await supabase.from("users").select("establishment_id").eq("id", user.id).single()
+  if (!userData?.establishment_id) return []
+
+  const ilike = `%${query}%`
+  const { data } = await supabase
+    .from("customer_loyalty")
+    .select(`
+      *,
+      customers (* )
+    `)
+    .eq("establishment_id", userData.establishment_id)
+    .or(`customers.name.ilike.${ilike},customers.whatsapp.ilike.${ilike}`)
+    .limit(20)
+
+  return data || []
+}

@@ -1,5 +1,6 @@
 -- Create customer_loyalty table (N:N junction table between customers and establishments)
 -- This table stores the loyalty balance for each customer at each establishment
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 
 create table if not exists public.customer_loyalty (
   id uuid primary key default gen_random_uuid(),

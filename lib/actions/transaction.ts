@@ -157,3 +157,104 @@ export async function redeemReward(formData: {
 
   return { pointsRedeemed: pointsToRedeem, newBalance }
 }
+
+export async function recordServiceTransaction(formData: {
+  customerId: string
+  professionalId?: string
+  services: Array<{
+    serviceId: string
+    quantity: number
+    unitPrice: number
+  }>
+  discountAmount: number
+  description?: string
+}) {
+  const supabase = await createClient()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Não autenticado")
+
+  const { data: userData } = await supabase.from("users").select("establishment_id").eq("id", user.id).single()
+  if (!userData?.establishment_id) throw new Error("Estabelecimento não encontrado")
+
+  const establishment_id = userData.establishment_id
+
+  // Get establishment config
+  const { data: config } = await supabase
+    .from("establishment_configs")
+    .select("*")
+    .eq("establishment_id", establishment_id)
+    .single()
+  if (!config) throw new Error("Configuração não encontrada")
+
+  // Get current loyalty balance
+  const { data: loyalty } = await supabase
+    .from("customer_loyalty")
+    .select("balance")
+    .eq("customer_id", formData.customerId)
+    .eq("establishment_id", establishment_id)
+    .single()
+  if (!loyalty) throw new Error("Cliente não encontrado")
+
+  // Calculate values
+  const subtotal = formData.services.reduce((sum, s) => sum + s.quantity * s.unitPrice, 0)
+  const discountAmount = Math.max(0, formData.discountAmount || 0)
+  if (discountAmount > subtotal) throw new Error("Desconto maior que o subtotal")
+  const finalValue = subtotal - discountAmount
+
+  // Calculate points
+  let pointsEarned = 0
+  if (config.program_type === "Pontuacao" && config.value_per_point) {
+    pointsEarned = Math.floor(finalValue / config.value_per_point)
+  } else if (config.program_type === "Carimbo") {
+    pointsEarned = 1
+  }
+
+  const newBalance = loyalty.balance + pointsEarned
+
+  // Update loyalty first to keep balance consistent
+  const { error: loyaltyError } = await supabase
+    .from("customer_loyalty")
+    .update({ balance: newBalance, last_transaction_at: new Date().toISOString() })
+    .eq("customer_id", formData.customerId)
+    .eq("establishment_id", establishment_id)
+  if (loyaltyError) throw loyaltyError
+
+  // Insert transaction and get id
+  const { data: transaction, error: txError } = await supabase
+    .from("transactions")
+    .insert({
+      establishment_id,
+      customer_id: formData.customerId,
+      professional_id: formData.professionalId || null,
+      type: "Compra",
+      monetary_value: subtotal,
+      discount_amount: discountAmount,
+      final_value: finalValue,
+      points_moved: pointsEarned,
+      description: formData.description || null,
+      balance_after: newBalance,
+    })
+    .select("*")
+    .single()
+  if (txError) throw txError
+
+  // Insert items
+  const items = formData.services.map((s) => ({
+    transaction_id: transaction.id,
+    service_id: s.serviceId,
+    professional_id: formData.professionalId || null,
+    quantity: s.quantity,
+    unit_price: s.unitPrice,
+    subtotal: s.quantity * s.unitPrice,
+  }))
+
+  const { error: itemsError } = await supabase.from("transaction_items").insert(items)
+  if (itemsError) throw itemsError
+
+  revalidatePath("/painel")
+  revalidatePath("/painel/clientes")
+  return { pointsEarned, newBalance, transactionId: transaction.id }
+}

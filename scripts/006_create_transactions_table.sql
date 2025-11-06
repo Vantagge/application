@@ -1,4 +1,5 @@
 -- Create transactions table for transaction history per establishment
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 
 create table if not exists public.transactions (
   id uuid primary key default gen_random_uuid(),

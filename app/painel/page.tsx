@@ -2,11 +2,14 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { getEstablishmentWithConfig, getDashboardStats } from "@/lib/actions/establishment"
 import { getCustomers } from "@/lib/actions/customer"
+import { getServices } from "@/lib/actions/service"
+import { getProfessionals } from "@/lib/actions/professional"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Award, Gift } from "lucide-react"
 import { translations } from "@/lib/translations/pt-br"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { ServiceTransactionDialog } from "@/components/painel/service-transaction-dialog"
 
 export default async function PainelPage() {
   const supabase = await createClient()
@@ -25,6 +28,8 @@ export default async function PainelPage() {
 
   const stats = await getDashboardStats()
   const customers = await getCustomers()
+  const services = await getServices()
+  const professionals = await getProfessionals()
 
   return (
     <div className="space-y-6">
@@ -109,6 +114,12 @@ export default async function PainelPage() {
           )}
         </CardContent>
       </Card>
+      <ServiceTransactionDialog
+        services={services}
+        professionals={professionals}
+        programType={establishmentData.config?.program_type || "Pontuacao"}
+        valuePerPoint={establishmentData.config?.value_per_point ?? null}
+      />
     </div>
   )
 }

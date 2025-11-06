@@ -1,5 +1,6 @@
 -- Security definer function to create or link a customer to the caller's establishment
 -- Bypasses RLS safely while attributing ownership to the authenticated user (auth.uid())
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 
 create or replace function public.setup_customer_with_loyalty(
   p_name text,

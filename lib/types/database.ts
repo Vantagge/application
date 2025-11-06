@@ -69,7 +69,42 @@ export interface Transaction {
   points_moved: number
   description: string | null
   balance_after: number
+  professional_id?: string | null
+  discount_amount?: number | null
+  final_value?: number | null
   created_at: string
+}
+
+export interface Service {
+  id: string
+  establishment_id: string
+  name: string
+  description: string | null
+  price: number
+  duration_minutes: number | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface Professional {
+  id: string
+  establishment_id: string
+  name: string
+  email: string | null
+  phone: string | null
+  commission_percentage: number | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface TransactionItem {
+  id: string
+  transaction_id: string
+  service_id: string
+  professional_id: string | null
+  quantity: number
+  unit_price: number
+  subtotal: number
 }
 
 // Extended types with relations

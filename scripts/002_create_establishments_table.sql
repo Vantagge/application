@@ -1,4 +1,5 @@
 -- Create establishments table for business data (B2B)
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 
 create table if not exists public.establishments (
   id uuid primary key default gen_random_uuid(),

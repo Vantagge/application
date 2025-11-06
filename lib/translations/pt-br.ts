@@ -153,6 +153,39 @@ export const translations = {
     transactionRecorded: "Transação registrada com sucesso!",
     redeemed: "Resgate realizado com sucesso!",
   },
+
+  // Services
+  service: {
+    title: "Serviços",
+    name: "Nome do Serviço",
+    price: "Preço",
+    duration: "Duração (minutos)",
+    addService: "Adicionar Serviço",
+    editService: "Editar Serviço",
+    noServices: "Nenhum serviço cadastrado",
+  },
+
+  // Professionals
+  professional: {
+    title: "Profissionais",
+    name: "Nome",
+    commission: "Comissão (%)",
+    addProfessional: "Adicionar Profissional",
+    selectProfessional: "Selecione o profissional",
+  },
+
+  // Service Transaction Flow
+  serviceTransaction: {
+    title: "Registrar Atendimento",
+    selectCustomer: "Selecionar Cliente",
+    selectServices: "Selecionar Serviços",
+    selectProfessional: "Profissional",
+    subtotal: "Subtotal",
+    discount: "Desconto",
+    finalValue: "Total a Pagar",
+    willEarn: "Cliente ganhará",
+    summary: "Resumo do Atendimento",
+  },
 } as const
 
 export type TranslationKey = keyof typeof translations

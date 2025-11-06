@@ -10,5 +10,7 @@
     <file url="file://$PROJECT_DIR$/scripts/007_create_user_profile_trigger.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
     <file url="file://$PROJECT_DIR$/scripts/008_setup_establishment_function.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
     <file url="file://$PROJECT_DIR$/scripts/009_setup_customer_function.sql" value="009dc2cf-d9f6-4e9f-829b-4a3abbaa5b5e" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/65aec92c-6c26-41c4-b7ce-15cba0d2d17e/console.sql" value="65aec92c-6c26-41c4-b7ce-15cba0d2d17e" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/a6d97161-a4af-4b68-a29c-f6b6b3cba83b/console.sql" value="a6d97161-a4af-4b68-a29c-f6b6b3cba83b" />
   </component>
 </project>

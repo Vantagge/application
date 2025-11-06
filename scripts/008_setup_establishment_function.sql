@@ -1,5 +1,6 @@
 -- Security definer function to create an establishment and its config atomically
 -- Bypasses RLS for the necessary tables while still attributing ownership to the caller (auth.uid())
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 
 create or replace function public.setup_establishment_with_config(
   p_name text,

@@ -1,5 +1,6 @@
 -- Create trigger to automatically create user profile when auth user is created
 -- This ensures every authenticated user has a corresponding profile in public.users
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 
 create or replace function public.handle_new_user()
 returns trigger

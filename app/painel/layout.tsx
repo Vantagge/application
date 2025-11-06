@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { LogoutButton } from "@/components/auth/logout-button"
 import Link from "next/link"
-import { Home, Users, Settings } from "lucide-react"
+import { Home, Users, Settings, Scissors, Briefcase, PlusCircle } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 export default async function PainelLayout({
   children,
@@ -50,6 +51,20 @@ export default async function PainelLayout({
                 Clientes
               </Link>
               <Link
+                href="/painel/servicos"
+                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                <Scissors className="h-4 w-4" />
+                Serviços
+              </Link>
+              <Link
+                href="/painel/profissionais"
+                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                <Briefcase className="h-4 w-4" />
+                Profissionais
+              </Link>
+              <Link
                 href="/painel/configuracoes"
                 className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
               >
@@ -59,6 +74,12 @@ export default async function PainelLayout({
             </nav>
           </div>
           <div className="flex items-center gap-4">
+            <Button asChild size="sm" className="hidden md:inline-flex">
+              <Link href="/painel?registrar=1" className="flex items-center gap-2">
+                <PlusCircle className="h-4 w-4" />
+                + Registrar Atendimento
+              </Link>
+            </Button>
             <span className="hidden sm:inline text-sm text-neutral-600">{userData?.name}</span>
             <LogoutButton />
           </div>

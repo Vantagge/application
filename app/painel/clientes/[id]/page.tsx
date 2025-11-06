@@ -93,7 +93,12 @@ export default async function ClienteDetalhesPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>{translations.transaction.addTransaction}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>{translations.transaction.addTransaction}</CardTitle>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/painel?registrar=1&customerId=${id}`}>Registrar Atendimento</Link>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <TransactionForm

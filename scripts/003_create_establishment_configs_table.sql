@@ -1,4 +1,5 @@
 -- Create establishment_configs table for loyalty program configuration (1:1 with establishments)
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 
 create table if not exists public.establishment_configs (
   id uuid primary key default gen_random_uuid(),

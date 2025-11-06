@@ -6,11 +6,11 @@ export async function updateSession(request: NextRequest) {
     request,
   })
 
-  const supabaseUrl = process.env.SUPABASE_URL
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("[v0] Supabase credentials not found in middleware")
+    console.warn("[supabase] Credentials not found in middleware. Skipping auth session refresh.")
     return supabaseResponse
   }
 

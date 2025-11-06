@@ -6,7 +6,7 @@ export function createClient() {
 
   if (!url || !anonKey) {
     throw new Error(
-      "Supabase public credentials not found. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables in the Vars section.",
+      "Supabase public credentials not found. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your environment (.env.local or hosting provider settings).",
     )
   }
 
