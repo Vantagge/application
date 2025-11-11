@@ -4,12 +4,21 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { updateLoyaltyRewardStatus } from "@/lib/actions/loyalty"
 import { generateLoyaltyCardImage } from "@/lib/actions/card-generator"
+import { z } from "zod"
+
+const recordTransactionSchema = z.object({
+  customerId: z.string().uuid(),
+  monetaryValue: z.number().finite().nonnegative(),
+  description: z.string().max(500).optional(),
+})
 
 export async function recordTransaction(formData: {
   customerId: string
   monetaryValue: number
   description?: string
 }) {
+  // Validate input DTO
+  const parsed = recordTransactionSchema.parse(formData)
   const supabase = await createClient()
 
   const {
@@ -81,10 +90,16 @@ export async function recordTransaction(formData: {
   return { pointsEarned, newBalance }
 }
 
+const redeemRewardSchema = z.object({
+  customerId: z.string().uuid(),
+  description: z.string().max(500).optional(),
+})
+
 export async function redeemReward(formData: {
   customerId: string
   description?: string
 }) {
+  const parsed = redeemRewardSchema.parse(formData)
   const supabase = await createClient()
 
   const {
@@ -160,6 +175,20 @@ export async function redeemReward(formData: {
   return { pointsRedeemed: pointsToRedeem, newBalance }
 }
 
+const serviceItemSchema = z.object({
+  serviceId: z.string().uuid(),
+  quantity: z.number().int().positive().max(999),
+  unitPrice: z.number().finite().nonnegative(),
+})
+
+const recordServiceTransactionSchema = z.object({
+  customerId: z.string().uuid(),
+  professionalId: z.string().uuid().optional(),
+  services: z.array(serviceItemSchema).min(1),
+  discountAmount: z.number().finite().nonnegative().max(9_999_999),
+  description: z.string().max(500).optional(),
+})
+
 export async function recordServiceTransaction(formData: {
   customerId: string
   professionalId?: string
@@ -171,6 +200,7 @@ export async function recordServiceTransaction(formData: {
   discountAmount: number
   description?: string
 }) {
+  const parsed = recordServiceTransactionSchema.parse(formData)
   const supabase = await createClient()
 
   const {

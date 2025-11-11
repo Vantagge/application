@@ -11,6 +11,8 @@ Contents
 - 4) Configure environment variables (.env.local)
 - 5) Install dependencies
 - 6) Run the app (development & production)
+- Tooling (Lint, Format, Test)
+- CI (GitHub Actions)
 - Troubleshooting
 
 Overview
@@ -209,3 +211,18 @@ Directory reference (root)
 - styles/ – Tailwind and global styles
 
 That’s it! After completing the steps, you should be able to create accounts, log in, register merchants (estabelecimentos) and customers, and operate the points/stamps logic within the panel.
+
+
+Tooling (Lint, Format, Test)
+- Lint: pnpm lint (auto-fix: pnpm lint:fix)
+- Format: pnpm format (check: pnpm format:check)
+- Typecheck: pnpm typecheck
+- Unit tests (Vitest): pnpm test (watch: pnpm test:watch)
+
+CI (GitHub Actions)
+- Pipeline runs on push/PR to main/master.
+- Steps: install (pnpm), lint, typecheck, build, test.
+- See .github/workflows/ci.yml.
+
+More docs
+- See docs/OPERATIONS.md for complete operations, environment variables, migrations, storage bucket, and cron job setup.

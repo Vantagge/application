@@ -1,6 +1,15 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { z } from "zod"
+
+const updateLoyaltyRewardStatusSchema = z.object({
+  customerId: z.string().uuid(),
+  establishmentId: z.string().uuid(),
+  newBalance: z.number().int().nonnegative(),
+  stampsForReward: z.number().int().positive(),
+  rewardValidityDays: z.number().int().positive().max(366),
+})
 
 export async function updateLoyaltyRewardStatus(params: {
   customerId: string
@@ -9,11 +18,12 @@ export async function updateLoyaltyRewardStatus(params: {
   stampsForReward: number
   rewardValidityDays: number
 }) {
+  const parsed = updateLoyaltyRewardStatusSchema.parse(params)
   const supabase = await createClient()
 
-  if (params.newBalance === params.stampsForReward) {
+  if (parsed.newBalance === parsed.stampsForReward) {
     const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + (params.rewardValidityDays || 30))
+    expiresAt.setDate(expiresAt.getDate() + (parsed.rewardValidityDays || 30))
 
     await supabase
       .from("customer_loyalty")
@@ -21,16 +31,23 @@ export async function updateLoyaltyRewardStatus(params: {
         reward_ready: true,
         reward_expires_at: expiresAt.toISOString(),
       })
-      .eq("customer_id", params.customerId)
-      .eq("establishment_id", params.establishmentId)
+      .eq("customer_id", parsed.customerId)
+      .eq("establishment_id", parsed.establishmentId)
   }
 }
+
+const redeemLoyaltyRewardSchema = z.object({
+  customerId: z.string().uuid(),
+  serviceId: z.string().uuid(),
+  professionalId: z.string().uuid().optional(),
+})
 
 export async function redeemLoyaltyReward(params: {
   customerId: string
   serviceId: string
   professionalId?: string
 }) {
+  const parsed = redeemLoyaltyRewardSchema.parse(params)
   const supabase = await createClient()
 
   const {
