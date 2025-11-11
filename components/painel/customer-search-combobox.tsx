@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Spinner } from "@/components/ui/spinner"
-import { searchCustomers } from "@/lib/actions/customer"
+import { createClient } from "@/lib/supabase/client"
 
 export function CustomerSearchCombobox({
   onSelect,

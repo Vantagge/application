@@ -1,3 +1,5 @@
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
+
 -- Create professionals table
 create table if not exists public.professionals (
   id uuid primary key default gen_random_uuid(),

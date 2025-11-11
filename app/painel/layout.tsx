@@ -5,6 +5,8 @@ import { LogoutButton } from "@/components/auth/logout-button"
 import Link from "next/link"
 import { Home, Users, Settings, Scissors, Briefcase, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { MobileNav } from "@/components/navigation/mobile-nav"
+import { ThemeToggle } from "@/components/theme/theme-toggle"
 
 export default async function PainelLayout({
   children,
@@ -28,17 +30,21 @@ export default async function PainelLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white">
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-50 border-b border-border bg-background">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-6">
-            <Link href="/painel" className="text-xl font-bold text-neutral-900">
+          <div className="flex items-center gap-3">
+            {/* Mobile hamburger on the left */}
+            <div className="md:hidden">
+              <MobileNav />
+            </div>
+            <Link href="/painel" className="text-xl font-bold text-foreground">
               Vantagge
             </Link>
             <nav className="hidden md:flex items-center gap-4">
               <Link
                 href="/painel"
-                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Home className="h-4 w-4" />
                 Início
@@ -74,6 +80,7 @@ export default async function PainelLayout({
             </nav>
           </div>
           <div className="flex items-center gap-4">
+            <div className="hidden md:block"><ThemeToggle /></div>
             <Button asChild size="sm" className="hidden md:inline-flex">
               <Link href="/painel?registrar=1" className="flex items-center gap-2">
                 <PlusCircle className="h-4 w-4" />

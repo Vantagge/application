@@ -17,8 +17,8 @@ export default async function ClientesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-neutral-900">{translations.dashboard.customerList}</h1>
-        <Button asChild className="bg-[#25D366] hover:bg-[#20BD5A]">
+        <h1 className="text-3xl font-bold text-foreground">{translations.dashboard.customerList}</h1>
+        <Button asChild>
           <Link href="/painel/clientes/novo" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             {translations.customer.addCustomer}

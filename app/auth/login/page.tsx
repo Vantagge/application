@@ -40,24 +40,24 @@ export default function LoginPage() {
       if (data.user) {
         console.log(data);
 
-        // const { data: userData, error: userError } = await supabase
-        //   .from("users")
-        //   .select("role")
-        //   .eq("id", data.user.id)
-        //   .single()
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", data.user.id)
+          .single()
 
-        // if (userError) {
-        //     console.log(userError);
-        //     console.log(userData);
-        //     throw userError
-        // }
+        if (userError) {
+            console.log(userError);
+            console.log(userData);
+            throw userError
+        }
 
         // Redirect based on role
-        // if (userData.role === "admin") {
+        if (userData.role === "admin") {
           router.push("/admin")
-        // } else {
-        //   router.push("/painel")
-        // }
+        } else {
+          router.push("/painel")
+        }
       }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : translations.errors.generic)
@@ -71,8 +71,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold text-neutral-900">Vantagge</h1>
-            <p className="text-sm text-neutral-600">Plataforma de Fidelização</p>
+            <h1 className="text-2xl font-bold text-foreground">Vantagge</h1>
+            <p className="text-sm text-muted-foreground">Plataforma de Fidelização</p>
           </div>
           <Card>
             <CardHeader>
@@ -106,13 +106,13 @@ export default function LoginPage() {
                     />
                   </div>
                   {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-                  <Button type="submit" className="w-full bg-[#25D366] hover:bg-[#20BD5A]" disabled={isLoading}>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? translations.auth.loggingIn : translations.auth.login}
                   </Button>
                 </div>
                 <div className="mt-4 text-center text-sm text-neutral-600">
                   {translations.auth.dontHaveAccount}{" "}
-                  <Link href="/auth/cadastro" className="font-medium text-[#25D366] hover:underline">
+                  <Link href="/auth/cadastro" className="font-medium text-primary hover:underline">
                     {translations.auth.signUp}
                   </Link>
                 </div>

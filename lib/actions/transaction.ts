@@ -2,6 +2,8 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { updateLoyaltyRewardStatus } from "@/lib/actions/loyalty"
+import { generateLoyaltyCardImage } from "@/lib/actions/card-generator"
 
 export async function recordTransaction(formData: {
   customerId: string
@@ -181,6 +183,13 @@ export async function recordServiceTransaction(formData: {
 
   const establishment_id = userData.establishment_id
 
+  // Get establishment info
+  const { data: establishment } = await supabase
+    .from("establishments")
+    .select("name")
+    .eq("id", establishment_id)
+    .single()
+
   // Get establishment config
   const { data: config } = await supabase
     .from("establishment_configs")
@@ -253,6 +262,31 @@ export async function recordServiceTransaction(formData: {
 
   const { error: itemsError } = await supabase.from("transaction_items").insert(items)
   if (itemsError) throw itemsError
+
+  // Update reward status for stamp programs and generate card image
+  if (config.program_type === "Carimbo") {
+    try {
+      await updateLoyaltyRewardStatus({
+        customerId: formData.customerId,
+        establishmentId: establishment_id,
+        newBalance,
+        stampsForReward: config.stamps_for_reward || 10,
+        rewardValidityDays: config.reward_validity_days || 30,
+      })
+
+      await generateLoyaltyCardImage({
+        establishmentName: establishment?.name || "Estabelecimento",
+        logoUrl: (config as any).establishment_logo_url || undefined,
+        currentStamps: newBalance,
+        totalStamps: config.stamps_for_reward || 10,
+        primaryColor: (config as any).card_primary_color || undefined,
+        customerId: formData.customerId,
+        establishmentId: establishment_id,
+      })
+    } catch (err) {
+      console.error("Erro ao atualizar status/gerar cartão:", err)
+    }
+  }
 
   revalidatePath("/painel")
   revalidatePath("/painel/clientes")

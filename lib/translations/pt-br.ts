@@ -19,6 +19,19 @@ export const translations = {
     close: "Fechar",
   },
 
+  // Theme / Navigation
+  theme: {
+    toggle: "Alternar tema",
+    light: "Claro",
+    dark: "Escuro",
+    system: "Sistema",
+  },
+  nav: {
+    menu: "Menu",
+    openMenu: "Abrir menu",
+    close: "Fechar",
+  },
+
   // Authentication
   auth: {
     login: "Entrar",
@@ -185,6 +198,23 @@ export const translations = {
     finalValue: "Total a Pagar",
     willEarn: "Cliente ganhará",
     summary: "Resumo do Atendimento",
+    next: "Próximo",
+    back: "Voltar",
+    finish: "Concluir",
+  },
+
+  // Loyalty
+  loyalty: {
+    cardTitle: "Cartão Fidelidade",
+    rewardReady: "Resgate Disponível",
+    rewardExpires: "Expira em",
+    days: "dias",
+    redeem: "Resgatar Prêmio",
+    selectServiceToRedeem: "Selecione o serviço para resgate",
+    redeemSuccess: "Recompensa resgatada com sucesso!",
+    rewardExpired: "Recompensa expirada",
+    noRewardAvailable: "Nenhuma recompensa disponível",
+    stampsProgress: "carimbos de",
   },
 } as const
 

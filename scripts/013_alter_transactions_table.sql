@@ -1,3 +1,4 @@
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 -- Alter transactions table to add professional and discount fields
 alter table if exists public.transactions 
   add column if not exists professional_id uuid references public.professionals(id),

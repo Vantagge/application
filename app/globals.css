@@ -151,3 +151,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Brand accent tokens for UI elements (Nubank purple) */
+:root {
+  --brand-accent: 138 5 190; /* #8A05BE */
+  --brand-accent-hover: 118 4 164; /* #7604A4 */
+}
+.dark {
+  --brand-accent: 138 5 190; /* #8A05BE */
+  --brand-accent-hover: 118 4 164; /* #7604A4 */
+}

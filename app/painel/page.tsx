@@ -10,6 +10,7 @@ import { translations } from "@/lib/translations/pt-br"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ServiceTransactionDialog } from "@/components/painel/service-transaction-dialog"
+import { RegisterFab } from "@/components/painel/register-fab"
 
 export default async function PainelPage() {
   const supabase = await createClient()
@@ -34,8 +35,8 @@ export default async function PainelPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-neutral-900">{translations.dashboard.title}</h1>
-        <p className="text-neutral-600 mt-1">{establishmentData.establishment.name}</p>
+        <h1 className="text-3xl font-bold text-foreground">{translations.dashboard.title}</h1>
+        <p className="text-muted-foreground mt-1">{establishmentData.establishment.name}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -78,7 +79,7 @@ export default async function PainelPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>{translations.dashboard.customerList}</CardTitle>
-            <Button asChild size="sm" className="bg-[#25D366] hover:bg-[#20BD5A]">
+            <Button asChild size="sm">
               <Link href="/painel/clientes/novo">{translations.customer.addCustomer}</Link>
             </Button>
           </div>
@@ -120,6 +121,8 @@ export default async function PainelPage() {
         programType={establishmentData.config?.program_type || "Pontuacao"}
         valuePerPoint={establishmentData.config?.value_per_point ?? null}
       />
+      {/* Mobile-only floating action button to open the dialog */}
+      <RegisterFab />
     </div>
   )
 }
