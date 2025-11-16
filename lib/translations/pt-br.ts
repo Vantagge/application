@@ -11,6 +11,7 @@ export const translations = {
     create: "Criar",
     search: "Pesquisar",
     filter: "Filtrar",
+    clear: "Limpar",
     back: "Voltar",
     next: "Próximo",
     previous: "Anterior",
