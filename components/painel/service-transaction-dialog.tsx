@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { translations } from "@/lib/translations/pt-br"
 import type { Service, Professional } from "@/lib/types/database"
 import { CustomerSearchCombobox } from "./customer-search-combobox"

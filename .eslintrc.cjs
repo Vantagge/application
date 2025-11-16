@@ -12,13 +12,8 @@ module.exports = {
     node: true,
     es2022: true,
   },
-  extends: [
-    "next/core-web-vitals",
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:unused-imports/recommended"
-  ],
+  // Keep legacy config minimal; full rules live in eslint.config.mjs (ESLint v9 flat config)
+  extends: "next/core-web-vitals",
   plugins: ["@typescript-eslint", "unused-imports"],
   rules: {
     "@typescript-eslint/no-explicit-any": "warn",

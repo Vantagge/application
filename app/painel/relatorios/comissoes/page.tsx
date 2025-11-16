@@ -14,13 +14,14 @@ function toCSV(rows: Array<{ professionalId: string; name: string; commissionPct
 export default async function ComissoesPage({ searchParams }: { searchParams?: Promise<{ from?: string; to?: string; professionalId?: string }> }) {
   const sp = (await searchParams) || {}
   const professionals = await getProfessionals()
-
+  
   const today = new Date()
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
   const from = sp.from || startOfMonth.toISOString()
   const to = sp.to || new Date().toISOString()
-  const professionalId = sp.professionalId
-
+  const professionalIdRaw = sp.professionalId
+  const professionalId = professionalIdRaw && professionalIdRaw !== 'all' ? professionalIdRaw : undefined
+  
   const data = await getCommissionReport({ from, to, professionalId })
 
   return (
@@ -45,12 +46,12 @@ export default async function ComissoesPage({ searchParams }: { searchParams?: P
             </div>
             <div>
               <label className="text-sm block mb-1">Profissional</label>
-              <Select name="professionalId" defaultValue={professionalId}>
+              <Select name="professionalId" defaultValue={professionalId || 'all'}>
                 <SelectTrigger>
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {professionals.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.name}

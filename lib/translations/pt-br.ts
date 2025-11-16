@@ -123,6 +123,17 @@ export const translations = {
     },
   },
 
+  // Transactions History Page
+  transactionHistory: {
+    title: "Transações",
+    export: "Exportar",
+    empty: "Nenhum registro encontrado",
+    tabs: {
+      past: "Realizadas",
+      future: "Futuras",
+    },
+  },
+
   // Admin
   admin: {
     title: "Painel Administrativo",

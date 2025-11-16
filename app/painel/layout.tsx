@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { LogoutButton } from "@/components/auth/logout-button"
 import Link from "next/link"
-import { Home, Users, Settings, Scissors, Briefcase, PlusCircle } from "lucide-react"
+import { Home, Users, Settings, Scissors, Briefcase, PlusCircle, History } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MobileNav } from "@/components/navigation/mobile-nav"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
@@ -69,6 +69,13 @@ export default async function PainelLayout({
               >
                 <Briefcase className="h-4 w-4" />
                 Profissionais
+              </Link>
+              <Link
+                href="/painel/transacoes"
+                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                <History className="h-4 w-4" />
+                Transações
               </Link>
               <Link
                 href="/painel/configuracoes"
