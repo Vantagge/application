@@ -11,6 +11,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { translations } from "@/lib/translations/pt-br"
+import { LoadingOverlay } from "@/components/ui/loading-overlay"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -67,7 +68,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-neutral-50 to-neutral-100">
+    <div className="relative flex min-h-svh w-full items-center justify-center p-6 md:p-10 bg-gradient-to-br from-neutral-50 to-neutral-100">
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2 text-center">
@@ -121,6 +122,8 @@ export default function LoginPage() {
           </Card>
         </div>
       </div>
+      {/* Fullscreen loader */}
+      <LoadingOverlay show={isLoading} label={translations.auth.loggingIn} fullscreen />
     </div>
   )
 }

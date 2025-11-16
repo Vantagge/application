@@ -102,6 +102,7 @@ export const translations = {
     customerDetails: "Detalhes do Cliente",
     loyaltyBalance: "Saldo de Fidelidade",
     transactionHistory: "Histórico de Transações",
+    singular: "Cliente",
   },
 
   // Transaction
@@ -176,6 +177,13 @@ export const translations = {
     addService: "Adicionar Serviço",
     editService: "Editar Serviço",
     noServices: "Nenhum serviço cadastrado",
+    active: "Ativo",
+    inactive: "Inativo",
+    toggleStatus: "Alterar Status",
+    confirmDelete: "Tem certeza que deseja excluir este serviço?",
+    deleteWarning: "Esta ação é irreversível e pode afetar registros passados.",
+    description: "Descrição",
+    descriptionPlaceholder: "Detalhes sobre o serviço...",
   },
 
   // Professionals
@@ -185,6 +193,7 @@ export const translations = {
     commission: "Comissão (%)",
     addProfessional: "Adicionar Profissional",
     selectProfessional: "Selecione o profissional",
+    singular: "Profissional",
   },
 
   // Service Transaction Flow

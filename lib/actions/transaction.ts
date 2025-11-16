@@ -213,6 +213,41 @@ export async function recordServiceTransaction(formData: {
 
   const establishment_id = userData.establishment_id
 
+  // Business rules validation
+  // 1) Must have at least one active professional in the establishment
+  const { count: activeProfCount } = await supabase
+    .from("professionals")
+    .select("id", { count: "exact", head: true })
+    .eq("establishment_id", establishment_id)
+    .eq("is_active", true)
+  if (!activeProfCount || activeProfCount === 0) {
+    throw new Error("Não há profissionais ativos no estabelecimento. Ative um profissional para registrar o atendimento.")
+  }
+
+  // 2) If a professional was selected, ensure it's active and belongs to the establishment
+  if (parsed.professionalId) {
+    const { data: prof } = await supabase
+      .from("professionals")
+      .select("id, establishment_id, is_active")
+      .eq("id", parsed.professionalId)
+      .single()
+    if (!prof || prof.establishment_id !== establishment_id || !prof.is_active) {
+      throw new Error("Profissional inválido ou inativo para este estabelecimento.")
+    }
+  }
+
+  // 3) Services must be active and belong to the establishment
+  const serviceIds = parsed.services.map((s) => s.serviceId)
+  const { data: activeServices } = await supabase
+    .from("services")
+    .select("id")
+    .in("id", serviceIds)
+    .eq("establishment_id", establishment_id)
+    .eq("is_active", true)
+  if (!activeServices || activeServices.length !== serviceIds.length) {
+    throw new Error("Um ou mais serviços selecionados estão inativos ou não pertencem ao estabelecimento.")
+  }
+
   // Get establishment info
   const { data: establishment } = await supabase
     .from("establishments")

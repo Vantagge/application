@@ -10,7 +10,6 @@ import { CustomerSearchCombobox } from "./customer-search-combobox"
 import { ServiceSelector, type ServiceItem } from "./service-selector"
 import { TransactionSummaryCard } from "./transaction-summary-card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { recordServiceTransaction } from "@/lib/actions/transaction"
 import { redeemLoyaltyReward } from "@/lib/actions/loyalty"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
@@ -37,7 +36,10 @@ export function ServiceTransactionDialog(props: {
   const [selectedServices, setSelectedServices] = useState<ServiceItem[]>([])
   const [discountAmount, setDiscountAmount] = useState<number>(0)
   const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>(undefined)
-  const professionals = props.professionals || []
+  // Only show active professionals in the dialog
+  const professionals = useMemo(() => (props.professionals || []).filter((p) => p.is_active), [props.professionals])
+  // Only show active services in the selector
+  const services = useMemo(() => (props.services || []).filter((s) => s.is_active), [props.services])
 
   // Auto-select professional if only one is available
   useMemo(() => {
@@ -111,14 +113,26 @@ export function ServiceTransactionDialog(props: {
 
     try {
       setSubmitting(true)
-      const res = await recordServiceTransaction({
-        customerId: selectedCustomer.id,
-        professionalId: selectedProfessionalId,
-        services: selectedServices.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, unitPrice: i.unitPrice })),
-        discountAmount: discountAmount || 0,
-        description: undefined,
+      const response = await fetch("/api/transactions/service", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerId: selectedCustomer.id,
+          professionalId: selectedProfessionalId,
+          services: selectedServices.map((i) => ({ serviceId: i.serviceId, quantity: i.quantity, unitPrice: i.unitPrice })),
+          discountAmount: discountAmount || 0,
+          description: undefined,
+        }),
       })
-      toast({ title: "Atendimento registrado", description: `Saldo novo: ${res.newBalance}` })
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        toast({ title: "Erro ao registrar", description: err?.error || "Tente novamente" })
+        return
+      }
+
+      const data = await response.json()
+      toast({ title: "Atendimento registrado", description: `Saldo novo: ${data.newBalance}` })
       onClose(false)
       // reset state
       setSelectedServices([])
@@ -162,7 +176,7 @@ export function ServiceTransactionDialog(props: {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="p-0 sm:max-w-2xl max-h-[90vh] overflow-y-auto top-0 left-0 translate-x-0 translate-y-0 h-svh w-svw sm:top-1/2 sm:left-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] sm:h-auto sm:w-full">
+      <DialogContent className="relative p-0 sm:max-w-2xl max-h[90vh] overflow-y-auto top-0 left-0 translate-x-0 translate-y-0 h-svh w-svw sm:top-1/2 sm:left-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] sm:h-auto sm:w-full">
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 bg-card px-6 py-4 border-b">
           <DialogHeader className="p-0">
@@ -194,7 +208,7 @@ export function ServiceTransactionDialog(props: {
             <div className="space-y-2">
               <p className="text-sm font-medium">{translations.serviceTransaction.selectServices}</p>
               <ServiceSelector
-                services={props.services || []}
+                services={services}
                 selectedServices={selectedServices}
                 onServiceToggle={handleToggleService}
                 onQuantityChange={handleQtyChange}
@@ -225,7 +239,7 @@ export function ServiceTransactionDialog(props: {
             </div>
           )}
           {step === 2 && !shouldShowProfessional && (
-            <div className="text-sm text-muted-foreground">Nenhum profissional cadastrado.</div>
+            <div className="text-sm text-muted-foreground">Nenhum profissional ativo.</div>
           )}
 
           {/* Step 3: Summary */}
@@ -290,6 +304,13 @@ export function ServiceTransactionDialog(props: {
             )}
           </div>
         </div>
+        {(submitting || redeeming) && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="rounded-lg bg-background/90 px-5 py-4 shadow">
+              <span className="text-sm">{submitting ? 'Salvando...' : 'Processando...'}</span>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

@@ -2,6 +2,7 @@ import { createProfessional } from "@/lib/actions/professional"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { SubmitButtonWithOverlay } from "@/components/ui/form-submit-overlay"
 import { Label } from "@/components/ui/label"
 import { translations } from "@/lib/translations/pt-br"
 import Link from "next/link"
@@ -44,7 +45,7 @@ export default function NovoProfissionalPage() {
               <Input id="commission_percentage" name="commission_percentage" type="number" step="0.01" />
             </div>
             <div className="flex items-center gap-2">
-              <Button type="submit">{translations.common.save}</Button>
+              <SubmitButtonWithOverlay label={translations.common.save} />
               <Button asChild variant="ghost">
                 <Link href="/painel/profissionais">{translations.common.cancel}</Link>
               </Button>

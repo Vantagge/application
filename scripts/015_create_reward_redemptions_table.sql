@@ -1,3 +1,4 @@
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 -- Tabela para rastrear histórico detalhado de resgates
 CREATE TABLE IF NOT EXISTS public.reward_redemptions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

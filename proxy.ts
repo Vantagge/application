@@ -1,7 +1,7 @@
 import { updateSession } from "@/lib/supabase/middleware"
 import { NextResponse, type NextRequest } from "next/server"
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Allow health and cron endpoints without auth redirects
   const path = request.nextUrl.pathname
   if (path.startsWith("/api/health") || path.startsWith("/api/cron")) {

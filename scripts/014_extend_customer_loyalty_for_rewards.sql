@@ -1,3 +1,4 @@
+-- DO NOT CHANGE THIS FILE. CREATE A NEW FILE FOR CHANGES.
 -- Adiciona campos para gerenciar recompensas e validade
 ALTER TABLE public.customer_loyalty
 ADD COLUMN IF NOT EXISTS reward_ready boolean DEFAULT false,

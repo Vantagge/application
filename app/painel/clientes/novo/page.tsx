@@ -12,6 +12,7 @@ import { translations } from "@/lib/translations/pt-br"
 import { createCustomer } from "@/lib/actions/customer"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { LoadingOverlay } from "@/components/ui/loading-overlay"
 
 export default function NovoClientePage() {
   const router = useRouter()
@@ -66,7 +67,7 @@ export default function NovoClientePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="relative max-w-2xl mx-auto">
       <Button asChild variant="ghost" className="mb-4">
         <Link href="/painel/clientes" className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
@@ -137,6 +138,8 @@ export default function NovoClientePage() {
           </form>
         </CardContent>
       </Card>
+
+      <LoadingOverlay show={isLoading} label="Cadastrando..." fullscreen />
     </div>
   )
 }

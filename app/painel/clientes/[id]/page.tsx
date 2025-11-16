@@ -45,7 +45,12 @@ export default async function ClienteDetalhesPage({
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>{translations.customer.customerDetails}</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>{translations.customer.customerDetails}</CardTitle>
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/painel/clientes/${id}/editar`}>{translations.common.edit}</Link>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>

@@ -1,16 +1,8 @@
-import { Loader2Icon } from 'lucide-react'
-
+import { Spinner as RadixSpinner } from '@radix-ui/themes'
 import { cn } from '@/lib/utils'
 
-function Spinner({ className, ...props }: React.ComponentProps<'svg'>) {
-  return (
-    <Loader2Icon
-      role="status"
-      aria-label="Loading"
-      className={cn('size-4 animate-spin', className)}
-      {...props}
-    />
-  )
+function Spinner({ className, ...props }: any) {
+  return <RadixSpinner className={cn(className)} {...props} />
 }
 
 export { Spinner }

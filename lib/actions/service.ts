@@ -58,7 +58,13 @@ export async function createService(form: ServiceFormData): Promise<Service> {
   }
 
   const { data, error } = await supabase.from("services").insert(payload).select("*").single()
-  if (error) throw error
+  if (error) {
+    // Handle unique violation on (establishment_id, lower(name))
+    if ((error as any).code === "23505") {
+      throw new Error("Serviço já cadastrado")
+    }
+    throw error
+  }
 
   revalidatePath("/painel/servicos")
   return data as Service
@@ -80,7 +86,12 @@ export async function updateService(id: string, form: ServiceFormData): Promise<
   if (typeof form.is_active === "boolean") updates.is_active = form.is_active
 
   const { error } = await supabase.from("services").update(updates).eq("id", id)
-  if (error) throw error
+  if (error) {
+    if ((error as any).code === "23505") {
+      throw new Error("Serviço já cadastrado")
+    }
+    throw error
+  }
 
   revalidatePath("/painel/servicos")
 }

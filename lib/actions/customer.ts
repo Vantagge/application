@@ -89,6 +89,26 @@ export async function getCustomerDetails(customerId: string) {
   return { loyalty, transactions: transactions || [] }
 }
 
+export async function updateCustomer(customerId: string, formData: { name: string; whatsapp: string; email?: string }) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Não autenticado")
+
+  const updates = {
+    name: formData.name,
+    whatsapp: formData.whatsapp,
+    email: formData.email ?? null,
+  }
+
+  const { error } = await supabase.from("customers").update(updates).eq("id", customerId)
+  if (error) throw error
+
+  revalidatePath("/painel/clientes")
+  revalidatePath(`/painel/clientes/${customerId}`)
+}
+
 export async function searchCustomers(query: string) {
   const supabase = await createClient()
 
@@ -105,10 +125,10 @@ export async function searchCustomers(query: string) {
     .from("customer_loyalty")
     .select(`
       *,
-      customers (* )
+      customers!inner(*)
     `)
     .eq("establishment_id", userData.establishment_id)
-    .or(`customers.name.ilike.${ilike},customers.whatsapp.ilike.${ilike}`)
+    .or(`name.ilike.${ilike},whatsapp.ilike.${ilike}`, { foreignTable: "customers" })
     .limit(20)
 
   return data || []

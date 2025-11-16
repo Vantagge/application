@@ -1,10 +1,10 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
-import sharp from "sharp"
-import { createCanvas, loadImage } from "canvas"
 import { ensureEstablishmentAssetsBucket } from "@/lib/storage/setup"
 
+// Generate loyalty card image; if canvas or sharp aren't available in the
+// runtime, fail gracefully and return null so the main flow isn't blocked.
 export async function generateLoyaltyCardImage(params: {
   establishmentName: string
   logoUrl?: string
@@ -13,7 +13,25 @@ export async function generateLoyaltyCardImage(params: {
   primaryColor?: string
   customerId: string
   establishmentId: string
-}) {
+}): Promise<string | null> {
+  // Lazy-load native modules to avoid crashing when not installed
+  let createCanvas: any, loadImage: any, sharp: any
+  try {
+    const canvasMod = await import("canvas")
+    createCanvas = canvasMod.createCanvas
+    loadImage = canvasMod.loadImage
+  } catch (e) {
+    console.warn("canvas module not available; skipping card generation")
+    return null
+  }
+  try {
+    const sharpMod = await import("sharp")
+    sharp = sharpMod.default || sharpMod
+  } catch (e) {
+    // sharp is only used for optional compression; continue without it
+    sharp = null
+  }
+
   const width = 800
   const height = 500
   const canvas = createCanvas(width, height)
@@ -94,10 +112,10 @@ export async function generateLoyaltyCardImage(params: {
   ctx.fillText(`${params.currentStamps} de ${params.totalStamps} carimbos`, width / 2, height - 70)
 
   // Convert to PNG buffer
-  let buffer = canvas.toBuffer("image/png")
+  let buffer: Buffer = canvas.toBuffer("image/png")
 
-  // If larger than 1MB, compress a bit with sharp
-  if (buffer.byteLength > 1_000_000) {
+  // If larger than 1MB, compress a bit with sharp if available
+  if (buffer.byteLength > 1_000_000 && sharp) {
     buffer = await sharp(buffer).png({ quality: 90 }).toBuffer()
   }
 
@@ -118,7 +136,10 @@ export async function generateLoyaltyCardImage(params: {
       upsert: true,
     })
 
-  if (uploadError) throw uploadError
+  if (uploadError) {
+    console.warn("Falha ao fazer upload do cartão de fidelidade:", uploadError)
+    return null
+  }
 
   const { data: publicUrl } = supabase.storage.from("establishment-assets").getPublicUrl(fileName)
 

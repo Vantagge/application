@@ -1,60 +1,76 @@
-import { getServices, toggleServiceStatus } from "@/lib/actions/service"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getServices } from "@/lib/actions/service"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { translations } from "@/lib/translations/pt-br"
-
-async function toggle(formData: FormData) {
-  "use server"
-  const id = String(formData.get("id"))
-  await toggleServiceStatus(id)
-}
+import { ServiceCard } from "@/components/painel/service-card"
 
 export default async function ServicosPage() {
   const services = await getServices()
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{translations.service.title}</h1>
-        <Button asChild>
-          <Link href="/painel/servicos/novo">{translations.service.addService}</Link>
+    <div className="min-h-screen px-4 sm:px-6 py-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            {translations.service.title}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1 hidden sm:block">
+            Gerencie os serviços oferecidos pelo seu estabelecimento
+          </p>
+        </div>
+        {/* Desktop: Button | Mobile: Hidden (will show FAB) */}
+        <Button asChild className="hidden md:flex">
+          <Link href="/painel/servicos/novo">
+            <span className="mr-2">＋</span>
+            {translations.service.addService}
+          </Link>
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{translations.service.title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {services.length === 0 ? (
-            <p className="text-neutral-500 text-center py-8">{translations.service.noServices}</p>
-          ) : (
-            <div className="divide-y">
-              {services.map((s) => (
-                <div key={s.id} className="flex items-center justify-between py-3 gap-4">
-                  <div className="flex-1">
-                    <p className="font-medium">{s.name}</p>
-                    <p className="text-sm text-neutral-500">R$ {Number(s.price).toFixed(2)}</p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded ${s.is_active ? "bg-green-100 text-green-700" : "bg-neutral-100 text-neutral-600"}`}>
-                    {s.is_active ? "Ativo" : "Inativo"}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/painel/servicos/${s.id}/editar`}>{translations.common.edit}</Link>
-                    </Button>
-                    <form action={toggle}>
-                      <input type="hidden" name="id" value={s.id} />
-                      <Button variant="ghost" size="sm">{s.is_active ? "Desativar" : "Ativar"}</Button>
-                    </form>
-                  </div>
-                </div>
-              ))}
+      {/* Lista de Serviços */}
+      {services.length === 0 ? (
+        <Card className="py-16">
+          <CardContent className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-muted rounded-full flex items-center justify-center">
+              <span className="text-3xl">＋</span>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <div>
+              <p className="text-lg font-medium text-foreground">
+                Nenhum serviço cadastrado
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Comece adicionando o primeiro serviço do seu estabelecimento
+              </p>
+            </div>
+            <Button asChild size="lg">
+              <Link href="/painel/servicos/novo">
+                <span className="mr-2">＋</span>
+                Adicionar Primeiro Serviço
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {services.map((service) => (
+            <ServiceCard key={service.id} service={service} />
+          ))}
+        </div>
+      )}
+
+      {/* Mobile FAB */}
+      <Button
+        asChild
+        size="lg"
+        className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg md:hidden"
+        aria-label="Adicionar novo serviço"
+      >
+        <Link href="/painel/servicos/novo">
+          <span className="text-2xl leading-none">＋</span>
+        </Link>
+      </Button>
     </div>
   )
 }
