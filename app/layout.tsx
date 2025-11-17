@@ -25,9 +25,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <html lang="pt-BR" suppressHydrationWarning className="light">
+      <body className={`font-sans antialiased bg-white`}> 
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           <div className="min-h-svh flex flex-col">
             <main className="flex-1 pb-16 md:pb-14">{children}</main>
             <Footer />

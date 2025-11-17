@@ -50,7 +50,30 @@ export async function createCustomer(formData: {
     p_email: formData.email ?? null,
   })
 
-  if (rpcError) throw rpcError
+  if (rpcError) {
+    // Handle PostgreSQL exceptions from SECURITY DEFINER function gracefully
+    // P0001 is a generic raise exception; rethrow a clean Error message for UI handling
+    const anyErr = rpcError as any
+    if (anyErr.code === "P0001") {
+      const cleanMsg = anyErr.details || anyErr.message || "Erro ao criar cliente"
+      throw new Error(cleanMsg)
+    }
+    // Fallback: wrap unknown errors to avoid leaking raw objects
+    throw new Error(anyErr?.message || "Erro ao criar cliente")
+  }
+
+  // Write activity log (non-blocking)
+  try {
+    await supabase.rpc("log_establishment_action", {
+      p_establishment_id: userData.establishment_id,
+      p_action: "customer.create",
+      p_entity_type: "customer",
+      p_entity_id: customer?.id || null,
+      p_metadata: { name: formData.name, whatsapp: formData.whatsapp, email: formData.email ?? null },
+    })
+  } catch (e) {
+    // ignore logging errors
+  }
 
   revalidatePath("/painel/clientes")
   return { success: true, customer }

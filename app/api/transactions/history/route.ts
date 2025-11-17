@@ -10,6 +10,8 @@ export async function GET(req: NextRequest) {
   const future = parseBool(searchParams.get("future"))
   const page = Number(searchParams.get("page") || 1)
   const pageSize = Math.min(100, Number(searchParams.get("pageSize") || 20))
+  const rawEstId = searchParams.get("establishmentId")
+  const establishmentId = !rawEstId || rawEstId === "null" || rawEstId === "undefined" ? undefined : rawEstId
   const filters: any = {
     from: searchParams.get("from") || undefined,
     to: searchParams.get("to") || undefined,
@@ -25,7 +27,7 @@ export async function GET(req: NextRequest) {
   if (maxFinal) filters.maxFinal = Number(maxFinal)
 
   try {
-    const result = await getTransactionsPaged({ filters, page, pageSize, future })
+    const result = await getTransactionsPaged({ filters, page, pageSize, future, establishmentId })
     return Response.json(result)
   } catch (e: any) {
     return Response.json({ error: e?.message || "Erro" }, { status: 400 })

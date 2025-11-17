@@ -162,3 +162,20 @@ export async function updateEstablishmentStatus(establishmentId: string, status:
 
   revalidatePath("/admin")
 }
+
+export async function getEstablishment(establishmentId: string) {
+  const supabase = await createClient()
+
+  if (!(await isAdmin())) {
+    throw new Error("Não autorizado")
+  }
+
+  const { data, error } = await supabase
+    .from("establishments")
+    .select("*, establishment_configs(*)")
+    .eq("id", establishmentId)
+    .single()
+
+  if (error) throw error
+  return data
+}

@@ -8,6 +8,8 @@ function parseBool(v: string | null): boolean {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const future = parseBool(searchParams.get("future"))
+  const rawEstId = searchParams.get("establishmentId")
+  const establishmentId = !rawEstId || rawEstId === "null" || rawEstId === "undefined" ? undefined : rawEstId
   const filters: any = {
     from: searchParams.get("from") || undefined,
     to: searchParams.get("to") || undefined,
@@ -25,7 +27,7 @@ export async function GET(req: NextRequest) {
   try {
     // Export up to 5000 rows
     const pageSize = 5000
-    const { data } = await getTransactionsPaged({ filters, page: 1, pageSize, future })
+    const { data } = await getTransactionsPaged({ filters, page: 1, pageSize, future, establishmentId })
 
     const headers = [
       "ID",

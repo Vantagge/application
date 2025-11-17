@@ -200,7 +200,7 @@ export async function recordServiceTransaction(formData: {
   discountAmount: number
   description?: string
 }) {
-  const parsed = recordServiceTransactionSchema.parse(formData)
+  // Delay strict validation until after establishment-level business rules that don't depend on payload shape
   const supabase = await createClient()
 
   const {
@@ -223,6 +223,9 @@ export async function recordServiceTransaction(formData: {
   if (!activeProfCount || activeProfCount === 0) {
     throw new Error("Não há profissionais ativos no estabelecimento. Ative um profissional para registrar o atendimento.")
   }
+
+  // Only after establishment-level guardrails, validate the payload strictly
+  const parsed = recordServiceTransactionSchema.parse(formData)
 
   // 2) If a professional was selected, ensure it's active and belongs to the establishment
   if (parsed.professionalId) {

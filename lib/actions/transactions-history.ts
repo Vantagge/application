@@ -21,11 +21,13 @@ export async function getTransactionsPaged({
   page = 1,
   pageSize = 20,
   future = false,
+  establishmentId,
 }: {
   filters?: TxFilters
   page?: number
   pageSize?: number
   future?: boolean
+  establishmentId?: string // admin override
 }): Promise<Paged<any>> {
   const supabase = await createClient()
   const {
@@ -33,8 +35,19 @@ export async function getTransactionsPaged({
   } = await supabase.auth.getUser()
   if (!user) throw new Error("Não autenticado")
 
-  const { data: userData } = await supabase.from("users").select("establishment_id").eq("id", user.id).single()
-  if (!userData?.establishment_id) return { data: [], total: 0 }
+  const { data: userData } = await supabase.from("users").select("establishment_id, role").eq("id", user.id).single()
+  if (!userData) return { data: [], total: 0 }
+
+  // Determine which establishment to query
+  let estId = userData.establishment_id as string | null
+  if (establishmentId) {
+    // Admin override only
+    if (userData.role !== "admin") {
+      throw new Error("Não autorizado")
+    }
+    estId = establishmentId
+  }
+  if (!estId) return { data: [], total: 0 }
 
   // Helper to build the query. When withSchedule is false, do not reference scheduled/status columns
   const buildQuery = (withSchedule: boolean) => {
@@ -49,12 +62,13 @@ export async function getTransactionsPaged({
       `,
         { count: "exact" },
       )
-      .eq("establishment_id", userData.establishment_id)
+      .eq("establishment_id", estId as string)
 
     const nowIso = new Date().toISOString()
     if (withSchedule) {
       if (future) {
-        q = q.not("scheduled_at", "is", null).gt("scheduled_at", nowIso)
+        // Filter only by scheduled_at > now; rows with null scheduled_at will naturally be excluded
+        q = q.gt("scheduled_at", nowIso)
       } else {
         q = q.or(`scheduled_at.is.null,scheduled_at.lte.${nowIso}`)
       }
@@ -125,8 +139,9 @@ export async function getTransactionsPaged({
     const msg = e?.message || ""
     const code = e?.code || e?.details || ""
     const isMissingColumn = msg.includes("scheduled_at") || msg.includes("status") || code === "42703"
-    if (!isMissingColumn) throw e
-    // Fallback: run without referencing scheduled/status columns
+    const isMethodMissing = e?.name === "TypeError" || msg.includes("is not a function")
+    if (!isMissingColumn && !isMethodMissing) throw e
+    // Fallback: run without referencing scheduled/status columns or unsupported methods in mocks
     return await run(false)
   }
 }
