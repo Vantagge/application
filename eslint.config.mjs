@@ -21,6 +21,7 @@ const ignores = [
   'dist/',
   'build/',
   'coverage/',
+  'public/',
 ]
 
 export default [

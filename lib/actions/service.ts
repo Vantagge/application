@@ -8,7 +8,7 @@ export type ServiceFormData = {
   name: string
   description?: string | null
   price: number
-  duration_minutes?: number | null
+  duration_minutes: number | null
   is_active?: boolean
 }
 
@@ -53,7 +53,7 @@ export async function createService(form: ServiceFormData): Promise<Service> {
     name: form.name,
     description: form.description ?? null,
     price: form.price,
-    duration_minutes: form.duration_minutes ?? null,
+    duration_minutes: form.duration_minutes,
     is_active: form.is_active ?? true,
   }
 
@@ -81,7 +81,7 @@ export async function updateService(id: string, form: ServiceFormData): Promise<
     name: form.name,
     description: form.description ?? null,
     price: form.price,
-    duration_minutes: form.duration_minutes ?? null,
+    duration_minutes: form.duration_minutes,
   }
   if (typeof form.is_active === "boolean") updates.is_active = form.is_active
 

@@ -7,9 +7,11 @@ import { Spinner } from "@/components/ui/spinner"
 export function CustomerSearchCombobox({
   onSelect,
   placeholder = "Buscar por nome ou telefone...",
+  selectedCustomerId,
 }: {
   onSelect: (customer: { id: string; name: string }) => void
   placeholder?: string
+  selectedCustomerId?: string
 }) {
   const [query, setQuery] = useState("")
   const [loading, setLoading] = useState(false)

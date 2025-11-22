@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import { translations } from "@/lib/translations/pt-br"
-import { Home, Users, Scissors, Briefcase, Settings, X, Menu, History } from "lucide-react"
+import { Home, Users, Scissors, Briefcase, Settings, X, Menu, History, Gauge, Calendar } from "lucide-react"
 
 interface NavLink {
   href: string
@@ -16,6 +16,8 @@ interface NavLink {
 
 const defaultLinks: NavLink[] = [
   { href: "/painel", label: "Início", icon: <Home className="h-4 w-4" /> },
+  { href: "/painel/dashboard", label: "Dashboard", icon: <Gauge className="h-4 w-4" /> },
+  { href: "/painel/agenda", label: "Agenda", icon: <Calendar className="h-4 w-4" /> },
   { href: "/painel/clientes", label: "Clientes", icon: <Users className="h-4 w-4" /> },
   { href: "/painel/servicos", label: "Serviços", icon: <Scissors className="h-4 w-4" /> },
   { href: "/painel/profissionais", label: "Profissionais", icon: <Briefcase className="h-4 w-4" /> },

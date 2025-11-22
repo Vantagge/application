@@ -3,10 +3,15 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { LogoutButton } from "@/components/auth/logout-button"
 import Link from "next/link"
-import { Home, Users, Settings, Scissors, Briefcase, PlusCircle, History } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import { Home, Users, Settings, Scissors, Briefcase, History, Gauge, Calendar } from "lucide-react"
 import { MobileNav } from "@/components/navigation/mobile-nav"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
+import RegisterProviderClient from "@/components/painel/register-provider-client"
+import { RegisterHeaderButton, RegisterDialogMount } from "@/components/painel/register-triggers"
+import { getEstablishmentWithConfig } from "@/lib/actions/establishment"
+import { getServices } from "@/lib/actions/service"
+import { getProfessionals } from "@/lib/actions/professional"
 
 export default async function PainelLayout({
   children,
@@ -29,17 +34,38 @@ export default async function PainelLayout({
     redirect("/admin")
   }
 
+  const establishmentData = await getEstablishmentWithConfig()
+  const [services, professionals] = await Promise.all([
+    getServices(),
+    getProfessionals(),
+  ])
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-50 border-b border-border bg-background">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <RegisterProviderClient>
+      <div className="flex min-h-screen flex-col bg-background">
+        <header className="sticky top-0 z-50 border-b border-border bg-background">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger on the left */}
             <div className="md:hidden">
               <MobileNav />
             </div>
-            <Link href="/painel" className="text-xl font-bold text-foreground">
-              Vantagge
+            <Link href="/painel" className="flex items-center gap-2">
+              {establishmentData?.establishment?.logo_url ? (
+                <div className="relative h-8 w-auto" style={{ minWidth: 80 }}>
+                  <Image
+                    src={establishmentData.establishment.logo_url}
+                    alt={establishmentData.establishment.name}
+                    width={120}
+                    height={32}
+                    className="h-8 w-auto object-contain"
+                  />
+                </div>
+              ) : (
+                <span className="text-xl font-bold text-foreground">
+                  {establishmentData?.establishment?.name || "Vantagge"}
+                </span>
+              )}
             </Link>
             <nav className="hidden md:flex items-center gap-4">
               <Link
@@ -48,6 +74,20 @@ export default async function PainelLayout({
               >
                 <Home className="h-4 w-4" />
                 Início
+              </Link>
+              <Link
+                href="/painel/dashboard"
+                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                <Gauge className="h-4 w-4" />
+                Dashboard
+              </Link>
+              <Link
+                href="/painel/agenda"
+                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+              >
+                <Calendar className="h-4 w-4" />
+                Agenda
               </Link>
               <Link
                 href="/painel/clientes"
@@ -88,18 +128,20 @@ export default async function PainelLayout({
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden md:block"><ThemeToggle /></div>
-            <Button asChild size="sm" className="hidden md:inline-flex">
-              <Link href="/painel?registrar=1" className="flex items-center gap-2">
-                <PlusCircle className="h-4 w-4" />
-                + Registrar Atendimento
-              </Link>
-            </Button>
+            <RegisterHeaderButton />
             <span className="hidden sm:inline text-sm text-neutral-600">{userData?.name}</span>
             <LogoutButton />
           </div>
         </div>
       </header>
       <main className="flex-1 container mx-auto px-4 py-6">{children}</main>
+      <RegisterDialogMount
+        services={services}
+        professionals={professionals}
+        programType={establishmentData?.config?.program_type || "Pontuacao"}
+        valuePerPoint={establishmentData?.config?.value_per_point ?? null}
+      />
     </div>
+    </RegisterProviderClient>
   )
 }

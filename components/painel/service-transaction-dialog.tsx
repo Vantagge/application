@@ -10,12 +10,12 @@ import { ServiceSelector, type ServiceItem } from "./service-selector"
 import { TransactionSummaryCard } from "./transaction-summary-card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { redeemLoyaltyReward } from "@/lib/actions/loyalty"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 export function ServiceTransactionDialog(props: {
-  isOpen?: boolean
+  isOpen: boolean
   onOpenChange?: (open: boolean) => void
   customerId?: string
   customerName?: string
@@ -25,12 +25,10 @@ export function ServiceTransactionDialog(props: {
   valuePerPoint?: number | null
 }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const [open, setOpen] = useState<boolean>(props.isOpen ?? searchParams.get("registrar") === "1")
+  const [open, setOpen] = useState<boolean>(props.isOpen)
   const [selectedCustomer, setSelectedCustomer] = useState<{ id: string; name: string } | null>(() => {
     if (props.customerId) return { id: props.customerId, name: props.customerName || "" }
-    const cid = searchParams.get("customerId")
-    return cid ? { id: cid, name: "" } : null
+    return null
   })
   const [selectedServices, setSelectedServices] = useState<ServiceItem[]>([])
   const [discountAmount, setDiscountAmount] = useState<number>(0)
@@ -56,23 +54,51 @@ export function ServiceTransactionDialog(props: {
   const [submitting, setSubmitting] = useState(false)
   const [redeeming, setRedeeming] = useState(false)
   const [step, setStep] = useState<0 | 1 | 2 | 3>(0)
+  const [appointmentMode, setAppointmentMode] = useState<"none" | "appointment" | "walkin">("none")
+  const [appointments, setAppointments] = useState<any[]>([])
+  const [loadingAppointments, setLoadingAppointments] = useState(false)
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null)
 
   useEffect(() => {
-    // Sync open state with query param changes
-    const isRegister = searchParams.get("registrar") === "1"
-    setOpen((prev) => (prev !== isRegister ? isRegister : prev))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams])
+    if (typeof props.isOpen === "boolean") setOpen(props.isOpen)
+  }, [props.isOpen])
+
+  // Load today's pending appointments when in appointment mode
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      if (appointmentMode !== "appointment" || !open) return
+      setLoadingAppointments(true)
+      try {
+        const res = await fetch(`/api/appointments?scope=today&status=PENDING`, { cache: "no-store" })
+        const json = await res.json()
+        if (!cancelled) setAppointments(json.data || [])
+      } catch {
+        if (!cancelled) setAppointments([])
+      } finally {
+        if (!cancelled) setLoadingAppointments(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [appointmentMode, open])
+
 
   const onClose = (o: boolean) => {
     setOpen(o)
     props.onOpenChange?.(o)
     if (!o) {
-      const sp = new URLSearchParams(Array.from(searchParams.entries()))
-      sp.delete("registrar")
-      router.replace(`?${sp.toString()}`, { scroll: false })
-      // reset step
+      // reset state
       setStep(0)
+      setAppointmentMode("none")
+      setAppointments([])
+      setSelectedAppointmentId(null)
+      setSelectedCustomer(props.customerId ? { id: props.customerId, name: props.customerName || "" } : null)
+      setSelectedServices([])
+      setDiscountAmount(0)
+      setSelectedProfessionalId(undefined)
     }
   }
 
@@ -131,11 +157,23 @@ export function ServiceTransactionDialog(props: {
       }
 
       const data = await response.json()
+      // If this came from an appointment, mark it completed
+      if (selectedAppointmentId) {
+        try {
+          await fetch(`/api/appointments/${selectedAppointmentId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'COMPLETED' }),
+          })
+        } catch {}
+      }
       toast({ title: "Atendimento registrado", description: `Saldo novo: ${data.newBalance}` })
       onClose(false)
       // reset state
       setSelectedServices([])
       setDiscountAmount(0)
+      setSelectedAppointmentId(null)
+      setAppointmentMode('none')
     } catch (e: any) {
       toast({ title: "Erro ao registrar", description: e?.message || "Tente novamente" })
     } finally {
@@ -174,8 +212,8 @@ export function ServiceTransactionDialog(props: {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="relative p-0 sm:max-w-2xl max-h[90vh] overflow-y-auto top-0 left-0 translate-x-0 translate-y-0 h-svh w-svw sm:top-1/2 sm:left-1/2 sm:translate-x-[-50%] sm:translate-y-[-50%] sm:h-auto sm:w-full">
+    <Dialog open={props.isOpen} onOpenChange={onClose}>
+      <DialogContent className="p-0 sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Sticky Header */}
         <div className="sticky top-0 z-10 bg-card px-6 py-4 border-b">
           <DialogHeader className="p-0">
@@ -191,19 +229,91 @@ export function ServiceTransactionDialog(props: {
 
         {/* Scrollable Body */}
         <ScrollArea className="px-6 py-4 max-h-[calc(90vh-140px)] sm:max-h-[60vh]">
+          {/* Initial Step: choose mode */}
+          {appointmentMode === "none" && (
+            <div className="grid gap-3">
+              <p className="text-sm font-medium">Como deseja registrar?</p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setAppointmentMode("appointment")
+                  }}
+                >
+                  Selecionar Agendamento
+                </Button>
+                <Button
+                  onClick={() => {
+                    setAppointmentMode("walkin")
+                    setStep(0)
+                  }}
+                >
+                  Atendimento Avulso
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Appointment list when selecting an appointment */}
+          {appointmentMode === "appointment" && (
+            <div className="grid gap-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium">Agendamentos de hoje (PENDING)</p>
+                <Button variant="ghost" size="sm" onClick={() => setAppointmentMode("none")}>Voltar</Button>
+              </div>
+              {loadingAppointments ? (
+                <div className="text-sm text-muted-foreground">Carregando...</div>
+              ) : appointments.length === 0 ? (
+                <div className="text-sm text-muted-foreground">Nenhum agendamento para hoje.</div>
+              ) : (
+                <div className="space-y-2">
+                  {appointments.map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => {
+                        setSelectedAppointmentId(a.id)
+                        // populate from appointment
+                        if (a.customers) setSelectedCustomer({ id: a.client_id, name: a.customers.name })
+                        setSelectedProfessionalId(a.professional_id)
+                        // Map service_ids to known services
+                        const svcMap = new Map(services.map((s) => [s.id, s]))
+                        const svcItems = (a.service_ids as string[]).map((sid: string) => {
+                          const s = svcMap.get(sid)
+                          return s ? { serviceId: s.id, name: s.name, unitPrice: Number(s.price), quantity: 1 } : null
+                        }).filter(Boolean) as ServiceItem[]
+                        setSelectedServices(svcItems)
+                        setAppointmentMode("walkin")
+                        setStep(1) // skip customer
+                      }}
+                      className={`w-full text-left rounded-md border p-3 hover:bg-muted ${selectedAppointmentId === a.id ? 'ring-2 ring-primary' : ''}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">{a.customers?.name || 'Cliente'}</div>
+                          <div className="text-xs text-muted-foreground">{new Date(a.start_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - {new Date(a.end_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">{professionals.find(p=>p.id===a.professional_id)?.name || ''}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Step 0: Customer */}
-          {step === 0 && !props.customerId && (
+          {appointmentMode === "walkin" && step === 0 && !props.customerId && (
             <div className="space-y-2">
               <p className="text-sm font-medium">{translations.serviceTransaction.selectCustomer}</p>
               <CustomerSearchCombobox onSelect={(c) => setSelectedCustomer(c)} />
             </div>
           )}
-          {step === 0 && props.customerId && (
+          {appointmentMode === "walkin" && step === 0 && props.customerId && (
             <div className="text-sm text-muted-foreground">Cliente pré-selecionado.</div>
           )}
 
           {/* Step 1: Services */}
-          {step === 1 && (
+          {appointmentMode !== "none" && step === 1 && (
             <div className="space-y-2">
               <p className="text-sm font-medium">{translations.serviceTransaction.selectServices}</p>
               <ServiceSelector
@@ -216,7 +326,7 @@ export function ServiceTransactionDialog(props: {
           )}
 
           {/* Step 2: Professional */}
-          {step === 2 && shouldShowProfessional && (
+          {appointmentMode !== "none" && step === 2 && shouldShowProfessional && (
             <div className="space-y-2">
               <p className="text-sm font-medium">{translations.serviceTransaction.selectProfessional}</p>
               {professionals.length === 1 ? (
@@ -237,20 +347,29 @@ export function ServiceTransactionDialog(props: {
               )}
             </div>
           )}
-          {step === 2 && !shouldShowProfessional && (
+          {appointmentMode !== "none" && step === 2 && !shouldShowProfessional && (
             <div className="text-sm text-muted-foreground">Nenhum profissional ativo.</div>
           )}
 
           {/* Step 3: Summary */}
-          {step === 3 && (
-            <TransactionSummaryCard
-              subtotal={subtotal}
-              discountAmount={discountAmount}
-              onDiscountChange={setDiscountAmount}
-              finalValue={finalValue}
-              programType={props.programType || 'Pontuacao'}
-              valuePerPoint={props.valuePerPoint ?? null}
-            />
+          {appointmentMode !== "none" && step === 3 && (
+            <>
+              <TransactionSummaryCard
+                subtotal={subtotal}
+                discountAmount={discountAmount}
+                onDiscountChange={setDiscountAmount}
+                finalValue={finalValue}
+                programType={props.programType || 'Pontuacao'}
+                valuePerPoint={props.valuePerPoint ?? null}
+              />
+              {/* Duration info */}
+              <div className="text-xs text-muted-foreground mt-2">
+                Tempo total estimado: {selectedServices.reduce((sum, i) => {
+                  const svc = services.find(s => s.id === i.serviceId)
+                  return sum + (svc ? svc.duration_minutes * i.quantity : 0)
+                }, 0)} min
+              </div>
+            </>
           )}
         </ScrollArea>
 

@@ -101,7 +101,7 @@ export default async function ClienteDetalhesPage({
             <div className="flex items-center justify-between">
               <CardTitle>{translations.transaction.addTransaction}</CardTitle>
               <Button asChild variant="outline" size="sm">
-                <Link href={`/painel?registrar=1&customerId=${id}`}>Registrar Atendimento</Link>
+                <Link href={`/painel`}>Registrar Atendimento</Link>
               </Button>
             </div>
           </CardHeader>

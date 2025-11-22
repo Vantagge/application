@@ -31,9 +31,7 @@ const serviceSchema = z.object({
   duration_minutes: z
     .number({ invalid_type_error: "Duração inválida" })
     .int("Duração deve ser um número inteiro")
-    .positive("Duração deve ser maior que zero")
-    .optional()
-    .nullable(),
+    .positive("Duração deve ser maior que zero"),
   is_active: z.boolean().default(true),
 })
 
@@ -62,14 +60,14 @@ export function ServiceForm({
           name: service.name,
           description: service.description || "",
           price: Number(service.price),
-          duration_minutes: service.duration_minutes || null,
+          duration_minutes: service.duration_minutes,
           is_active: service.is_active,
         }
       : {
           name: "",
           description: "",
           price: 0,
-          duration_minutes: null,
+          duration_minutes: 30,
           is_active: true,
         },
   })
@@ -170,9 +168,8 @@ export function ServiceForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="duration_minutes">
+              <Label htmlFor="duration_minutes" className="required">
                 {translations.service.duration}
-                <span className="text-muted-foreground ml-1">(Opcional)</span>
               </Label>
               <div className="relative">
                 <Input
@@ -181,7 +178,6 @@ export function ServiceForm({
                   min="1"
                   {...register("duration_minutes", {
                     valueAsNumber: true,
-                    setValueAs: (v) => (v === "" ? null : Number(v)),
                   })}
                   placeholder="Ex: 30"
                   className={errors.duration_minutes ? "border-destructive" : ""}

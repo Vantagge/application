@@ -197,6 +197,31 @@ Deploying
 - Ensure that your Supabase Auth redirect URLs include your production domain.
 
 Troubleshooting
+
+---
+
+Storage (Supabase) – Establishment Logo Upload
+1. Create public bucket:
+   - In Supabase Storage, create a new bucket named establishment-assets. Mark it as public.
+2. Add bucket policies (SQL):
+   -- Allow anon (public) read
+   create policy if not exists "public_read_establishment_assets" on storage.objects for select
+   using ( bucket_id = 'establishment-assets' );
+
+   -- Allow authenticated users to insert/update
+   create policy if not exists "auth_write_establishment_assets" on storage.objects for insert to authenticated
+   with check ( bucket_id = 'establishment-assets' );
+
+   create policy if not exists "auth_update_establishment_assets" on storage.objects for update to authenticated
+   using ( bucket_id = 'establishment-assets' )
+   with check ( bucket_id = 'establishment-assets' );
+
+3. Run DB migration adding logo_url:
+   - Execute scripts/024_add_establishment_logo_url.sql in SQL Editor (or run your migration pipeline).
+
+4. Environment: no extra env is needed beyond SUPABASE_URL and keys already configured.
+
+After this, uploading a logo in Painel → Configurações will store the file under establishment-assets/logos/ and update establishments.logo_url. The Header and Home automatically render the logo with a fallback when absent.
 - Error: Supabase credentials not found. Ensure all 4 env vars are set: SUPABASE_URL, SUPABASE_ANON_KEY, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY.
 - After sign up, the app cannot find the user row in public.users: make sure you executed the trigger (2.8) and the users table exists. Alternatively, create the row manually for testing.
 - Access is redirected to /auth/login repeatedly: verify that you are authenticated in Supabase and that cookies are set. The middleware enforces redirects for non-public routes.

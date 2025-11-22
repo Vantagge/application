@@ -26,6 +26,7 @@ export interface Establishment {
   registration: string
   status: EstablishmentStatus
   created_at: string
+  logo_url?: string | null
 }
 
 export interface EstablishmentConfig {
@@ -81,8 +82,23 @@ export interface Service {
   name: string
   description: string | null
   price: number
-  duration_minutes: number | null
+  duration_minutes: number
   is_active: boolean
+  created_at: string
+}
+
+export type AppointmentStatus = "PENDING" | "COMPLETED" | "CANCELED"
+
+export interface Appointment {
+  id: string
+  establishment_id: string
+  client_id: string
+  professional_id: string
+  service_ids: string[]
+  start_at: string
+  end_at: string
+  status: AppointmentStatus
+  google_event_id: string | null
   created_at: string
 }
 

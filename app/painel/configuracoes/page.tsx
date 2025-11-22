@@ -12,6 +12,7 @@ import { translations } from "@/lib/translations/pt-br"
 import { getEstablishmentWithConfig, updateEstablishmentConfig } from "@/lib/actions/establishment"
 import { useToast } from "@/hooks/use-toast"
 import type { ProgramType } from "@/lib/types/database"
+import { LogoUploader } from "@/components/painel/logo-uploader"
 
 export default function ConfiguracoesPage() {
   const { toast } = useToast()
@@ -73,24 +74,33 @@ export default function ConfiguracoesPage() {
           <CardTitle>Informações do Estabelecimento</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label className="text-neutral-500">Nome</Label>
-            <p className="text-lg font-medium flex items-center gap-2">
-              {establishment.establishment.name}
-              {establishment.establishment.registration && (
-                <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200">
-                  #{establishment.establishment.registration}
-                </span>
-              )}
-            </p>
-          </div>
-          <div>
-            <Label className="text-neutral-500">Categoria</Label>
-            <p className="text-lg font-medium">{establishment.establishment.category}</p>
-          </div>
-          <div>
-            <Label className="text-neutral-500">Responsável</Label>
-            <p className="text-lg font-medium">{establishment.establishment.responsible_name}</p>
+          <div className="flex items-start gap-4">
+            <LogoUploader
+              initialUrl={establishment.establishment.logo_url}
+              establishmentName={establishment.establishment.name}
+              onUploaded={(url) => setEstablishment((prev: any) => ({ ...prev, establishment: { ...prev.establishment, logo_url: url } }))}
+            />
+            <div className="flex-1 space-y-4">
+              <div>
+                <Label className="text-neutral-500">Nome</Label>
+                <p className="text-lg font-medium flex items-center gap-2">
+                  {establishment.establishment.name}
+                  {establishment.establishment.registration && (
+                    <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-100 text-neutral-700 border border-neutral-200">
+                      #{establishment.establishment.registration}
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div>
+                <Label className="text-neutral-500">Categoria</Label>
+                <p className="text-lg font-medium">{establishment.establishment.category}</p>
+              </div>
+              <div>
+                <Label className="text-neutral-500">Responsável</Label>
+                <p className="text-lg font-medium">{establishment.establishment.responsible_name}</p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
