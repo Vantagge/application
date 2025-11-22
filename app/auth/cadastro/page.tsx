@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { translations } from "@/lib/translations/pt-br"
 
 export default function SignUpPage() {
@@ -20,6 +20,16 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  // If user is already authenticated, redirect to home (painel)
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        router.replace("/painel")
+      }
+    })
+  }, [router])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,7 +100,7 @@ export default function SignUpPage() {
               <CardDescription>{translations.auth.signUpDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSignUp}>
+              <form onSubmit={handleSignUp} suppressHydrationWarning autoComplete="off" data-lpignore="true" data-1p-ignore="true">
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="name">{translations.customer.name}</Label>

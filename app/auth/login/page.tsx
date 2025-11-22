@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { translations } from "@/lib/translations/pt-br"
 import { LoadingOverlay } from "@/components/ui/loading-overlay"
 
@@ -19,6 +19,16 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+
+  // If user is already authenticated, redirect to home (painel)
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        router.replace("/painel")
+      }
+    })
+  }, [router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,7 +91,7 @@ export default function LoginPage() {
               <CardDescription>{translations.auth.loginDescription}</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin}>
+              <form onSubmit={handleLogin} suppressHydrationWarning autoComplete="off" data-lpignore="true" data-1p-ignore="true">
                 <div className="flex flex-col gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="email">{translations.auth.email}</Label>
