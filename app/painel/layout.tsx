@@ -12,6 +12,7 @@ import { RegisterHeaderButton, RegisterDialogMount } from "@/components/painel/r
 import { getEstablishmentWithConfig } from "@/lib/actions/establishment"
 import { getServices } from "@/lib/actions/service"
 import { getProfessionals } from "@/lib/actions/professional"
+import { FeaturesProvider } from "@/components/feature/FeaturesProvider"
 
 export default async function PainelLayout({
   children,
@@ -40,15 +41,37 @@ export default async function PainelLayout({
     getProfessionals(),
   ])
 
+  // Load feature flags to hide menu entries when needed
+  const { getFeatureMap } = await import("@/lib/features")
+  const featureMap = establishmentData?.establishment?.id ? await getFeatureMap(establishmentData.establishment.id) : new Map<string, boolean>()
+  const schedulingEnabled = featureMap.get("module_scheduling") ?? false
+  const dashboardEnabled = featureMap.get("module_dashboard") ?? true
+  const servicesEnabled = featureMap.get("module_services") ?? true
+  const transactionsEnabled = featureMap.get("module_transactions") ?? true
+
+  // Build initial features map to hydrate client provider
+  const initialFeatures: Record<string, boolean> = {}
+  for (const [k, v] of featureMap.entries()) initialFeatures[k] = v
+
   return (
     <RegisterProviderClient>
+      <FeaturesProvider initial={initialFeatures}>
       <div className="flex min-h-screen flex-col bg-background">
         <header className="sticky top-0 z-50 border-b border-border bg-background">
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger on the left */}
             <div className="md:hidden">
-              <MobileNav />
+              <MobileNav links={[
+                { href: "/painel", label: "Início", icon: <Home className="h-4 w-4" /> },
+                ...(dashboardEnabled ? [{ href: "/painel/dashboard", label: "Dashboard", icon: <Gauge className="h-4 w-4" /> }] : []),
+                ...(schedulingEnabled ? [{ href: "/painel/agenda", label: "Agenda", icon: <Calendar className="h-4 w-4" /> }] : []),
+                { href: "/painel/clientes", label: "Clientes", icon: <Users className="h-4 w-4" /> },
+                ...(servicesEnabled ? [{ href: "/painel/servicos", label: "Serviços", icon: <Scissors className="h-4 w-4" /> }] : []),
+                { href: "/painel/profissionais", label: "Profissionais", icon: <Briefcase className="h-4 w-4" /> },
+                ...(transactionsEnabled ? [{ href: "/painel/transacoes", label: "Transações", icon: <History className="h-4 w-4" /> }] : []),
+                { href: "/painel/configuracoes", label: "Configurações", icon: <Settings className="h-4 w-4" /> },
+              ]} />
             </div>
             <Link href="/painel" className="flex items-center gap-2">
               {establishmentData?.establishment?.logo_url ? (
@@ -75,20 +98,24 @@ export default async function PainelLayout({
                 <Home className="h-4 w-4" />
                 Início
               </Link>
-              <Link
-                href="/painel/dashboard"
-                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                <Gauge className="h-4 w-4" />
-                Dashboard
-              </Link>
-              <Link
-                href="/painel/agenda"
-                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                <Calendar className="h-4 w-4" />
-                Agenda
-              </Link>
+              {dashboardEnabled && (
+                <Link
+                  href="/painel/dashboard"
+                  className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                >
+                  <Gauge className="h-4 w-4" />
+                  Dashboard
+                </Link>
+              )}
+              {schedulingEnabled && (
+                <Link
+                  href="/painel/agenda"
+                  className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                >
+                  <Calendar className="h-4 w-4" />
+                  Agenda
+                </Link>
+              )}
               <Link
                 href="/painel/clientes"
                 className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
@@ -96,13 +123,15 @@ export default async function PainelLayout({
                 <Users className="h-4 w-4" />
                 Clientes
               </Link>
-              <Link
-                href="/painel/servicos"
-                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                <Scissors className="h-4 w-4" />
-                Serviços
-              </Link>
+              {servicesEnabled && (
+                <Link
+                  href="/painel/servicos"
+                  className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                >
+                  <Scissors className="h-4 w-4" />
+                  Serviços
+                </Link>
+              )}
               <Link
                 href="/painel/profissionais"
                 className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
@@ -110,13 +139,15 @@ export default async function PainelLayout({
                 <Briefcase className="h-4 w-4" />
                 Profissionais
               </Link>
-              <Link
-                href="/painel/transacoes"
-                className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
-              >
-                <History className="h-4 w-4" />
-                Transações
-              </Link>
+              {transactionsEnabled && (
+                <Link
+                  href="/painel/transacoes"
+                  className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+                >
+                  <History className="h-4 w-4" />
+                  Transações
+                </Link>
+              )}
               <Link
                 href="/painel/configuracoes"
                 className="flex items-center gap-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
@@ -142,6 +173,7 @@ export default async function PainelLayout({
         valuePerPoint={establishmentData?.config?.value_per_point ?? null}
       />
     </div>
+    </FeaturesProvider>
     </RegisterProviderClient>
   )
 }

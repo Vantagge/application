@@ -1,13 +1,26 @@
 import { NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { hasFeature } from "@/lib/features"
+import { z } from "zod"
+
+const patchSchema = z.object({
+  status: z.enum(["PENDING", "COMPLETED", "CANCELED"]).optional(),
+  start_at: z.string().datetime().optional(),
+  professional_id: z.string().uuid().optional(),
+  service_ids: z.array(z.string().uuid()).min(1).optional(),
+})
 
 export async function PATCH(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   try {
     const { id } = await context.params
-    const body = await req.json().catch(() => ({}))
-    const { status, start_at, professional_id, service_ids }: { status?: "PENDING" | "COMPLETED" | "CANCELED"; start_at?: string; professional_id?: string; service_ids?: string[] } = body
     if (!id) return Response.json({ error: "Dados inválidos" }, { status: 400 })
+    const body = await req.json().catch(() => ({}))
+    const parsed = patchSchema.safeParse(body)
+    if (!parsed.success) {
+      return Response.json({ error: "Dados inválidos", details: parsed.error.flatten() }, { status: 400 })
+    }
+    const { status, start_at, professional_id, service_ids } = parsed.data
 
     const {
       data: { user },
@@ -16,6 +29,12 @@ export async function PATCH(req: NextRequest, context: { params: Promise<{ id: s
 
     const { data: userData } = await supabase.from("users").select("establishment_id").eq("id", user.id).single()
     if (!userData?.establishment_id) return Response.json({ error: "Estabelecimento não encontrado" }, { status: 400 })
+
+    // Feature guard: scheduling module must be enabled
+    const schedulingEnabled = await hasFeature(userData.establishment_id, "module_scheduling")
+    if (!schedulingEnabled) {
+      return Response.json({ error: "Funcionalidade desativada: Agendamento" }, { status: 403 })
+    }
 
     // Load current appointment
     const { data: current, error: currErr } = await supabase

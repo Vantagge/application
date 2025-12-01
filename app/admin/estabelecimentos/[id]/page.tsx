@@ -93,7 +93,12 @@ export default async function AdminEstablishmentDetailPage({ params }: { params:
           <h1 className="text-2xl sm:text-3xl font-bold">{establishment.name}</h1>
           <p className="text-sm text-muted-foreground">{establishment.category} • {establishment.responsible_name}</p>
         </div>
-        <Button asChild variant="outline"><Link href="/admin/estabelecimentos">Voltar</Link></Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline"><Link href="/admin/estabelecimentos">Voltar</Link></Button>
+          <Button asChild>
+            <Link href={`/admin/tenants/${id}/features`}>Gerenciar Features</Link>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="geral">

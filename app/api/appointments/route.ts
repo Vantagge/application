@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server"
 import { createClient } from "@/lib/supabase/server"
+import { hasFeature } from "@/lib/features"
+import { z } from "zod"
 
 function addMinutes(dateIso: string, minutes: number) {
   const d = new Date(dateIso)
@@ -7,20 +9,22 @@ function addMinutes(dateIso: string, minutes: number) {
   return d.toISOString()
 }
 
+const postSchema = z.object({
+  clientId: z.string().uuid(),
+  professionalId: z.string().uuid(),
+  serviceIds: z.array(z.string().uuid()).min(1),
+  startAt: z.string().datetime(),
+})
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   try {
     const body = await req.json()
-    const {
-      clientId,
-      professionalId,
-      serviceIds,
-      startAt,
-    }: { clientId: string; professionalId: string; serviceIds: string[]; startAt: string } = body
-
-    if (!clientId || !professionalId || !Array.isArray(serviceIds) || serviceIds.length === 0 || !startAt) {
-      return Response.json({ error: "Dados inválidos" }, { status: 400 })
+    const parse = postSchema.safeParse(body)
+    if (!parse.success) {
+      return Response.json({ error: "Dados inválidos", details: parse.error.flatten() }, { status: 400 })
     }
+    const { clientId, professionalId, serviceIds, startAt } = parse.data
 
     // Auth and establishment
     const {
@@ -34,6 +38,12 @@ export async function POST(req: NextRequest) {
       .eq("id", user.id)
       .single()
     if (userErr || !userData?.establishment_id) return Response.json({ error: "Estabelecimento não encontrado" }, { status: 400 })
+
+    // Feature guard: scheduling module must be enabled
+    const schedulingEnabled = await hasFeature(userData.establishment_id, "module_scheduling")
+    if (!schedulingEnabled) {
+      return Response.json({ error: "Funcionalidade desativada: Agendamento" }, { status: 403 })
+    }
 
     // Fetch services to compute total duration
     const { data: services, error: svcErr } = await supabase
@@ -77,7 +87,11 @@ export async function POST(req: NextRequest) {
       status: "PENDING" as const,
     }
 
-    const { data, error } = await supabase.from("appointments").insert(payload).select("*").single()
+    const { data, error } = await supabase
+      .from("appointments")
+      .insert(payload)
+      .select("id, start_at, end_at, status, client_id, professional_id")
+      .single()
     if (error) return Response.json({ error: error.message }, { status: 400 })
 
     return Response.json({ data }, { status: 201 })
@@ -87,13 +101,28 @@ export async function POST(req: NextRequest) {
 }
 
 // Optional: GET can list with filters, including today pending via query params
+const getQuerySchema = z.object({
+  scope: z.enum(["today"]).optional(),
+  status: z.enum(["PENDING", "COMPLETED", "CANCELED"]).default("PENDING"),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+})
+
 export async function GET(req: NextRequest) {
   const supabase = await createClient()
   try {
     const { searchParams } = new URL(req.url)
-    const scope = searchParams.get("scope") // e.g., "today"
-    const status = searchParams.get("status") || "PENDING"
-    const date = searchParams.get("date") // YYYY-MM-DD
+    const parse = getQuerySchema.safeParse({
+      scope: searchParams.get("scope") ?? undefined,
+      status: searchParams.get("status") ?? undefined,
+      date: searchParams.get("date") ?? undefined,
+    })
+    if (!parse.success) {
+      return Response.json({ error: "Parâmetros inválidos", details: parse.error.flatten() }, { status: 400 })
+    }
+    const { scope, status, date } = parse.data
 
     const {
       data: { user },
@@ -102,6 +131,12 @@ export async function GET(req: NextRequest) {
 
     const { data: userData } = await supabase.from("users").select("establishment_id").eq("id", user.id).single()
     if (!userData?.establishment_id) return Response.json({ error: "Estabelecimento não encontrado" }, { status: 400 })
+
+    // Feature guard: scheduling module must be enabled
+    const schedulingEnabled = await hasFeature(userData.establishment_id, "module_scheduling")
+    if (!schedulingEnabled) {
+      return Response.json({ error: "Funcionalidade desativada: Agendamento" }, { status: 403 })
+    }
 
     let from = new Date()
     let to = new Date()

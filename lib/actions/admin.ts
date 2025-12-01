@@ -1,6 +1,6 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import type { EstablishmentCategory, ProgramType } from "@/lib/types/database"
 
@@ -85,7 +85,9 @@ export async function createEstablishmentAsAdmin(formData: {
   }
 
   // Create auth user for the establishment owner
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  // Use service role for auth admin operations
+  const admin = await createAdminClient()
+  const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email: formData.email,
     password: formData.password,
     email_confirm: true,

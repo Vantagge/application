@@ -3,6 +3,8 @@ import { Label } from "@/components/ui/label"
 import { getEstablishmentWithConfig } from "@/lib/actions/establishment"
 import { LogoUploader } from "@/components/painel/logo-uploader"
 import ConfiguracoesForm from "@/components/painel/configuracoes-form"
+import FeatureGuard from "@/components/feature/FeatureGuard"
+import UpgradePlanBanner from "@/components/feature/UpgradePlanBanner"
 
 export default async function ConfiguracoesPage() {
   const data = await getEstablishmentWithConfig()
@@ -21,10 +23,12 @@ export default async function ConfiguracoesPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start gap-4">
-            <LogoUploader
-              initialUrl={data.establishment.logo_url}
-              establishmentName={data.establishment.name}
-            />
+            <FeatureGuard feature="custom_branding" fallback={<UpgradePlanBanner message="Para enviar seu logo e personalizar sua marca, faça upgrade do seu plano." /> }>
+              <LogoUploader
+                initialUrl={data.establishment.logo_url}
+                establishmentName={data.establishment.name}
+              />
+            </FeatureGuard>
             <div className="flex-1 space-y-4">
               <div>
                 <Label className="text-neutral-500">Nome</Label>

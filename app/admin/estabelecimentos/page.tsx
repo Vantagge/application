@@ -77,6 +77,9 @@ export default async function EstabelecimentosPage() {
                     {est.establishment_configs && (
                       <p className="text-xs text-neutral-500">{est.establishment_configs.program_type}</p>
                     )}
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={`/admin/tenants/${est.id}/features`}>Gerenciar Features</Link>
+                    </Button>
                   </div>
                 </Link>
               ))}
